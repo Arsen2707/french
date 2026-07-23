@@ -331,6 +331,18 @@ class TapGame {
     );
     if (this.score > best) localStorage.setItem('arsen_tap_best', String(this.score));
 
+    if (window.app?.auth?.getMode() === 'local') {
+      const user = window.app.auth.getUser();
+      if (user) {
+        const acc = LocalAuth.getAccount(user.email);
+        const accBest = Math.max(acc?.tapBest || 0, this.score);
+        LocalAuth.updateAccount(user.email, { tapBest: accBest });
+      }
+    }
+    if (API.getToken()) {
+      API.saveTapScore(this.score, this.difficulty).catch(() => {});
+    }
+
     document.dispatchEvent(new CustomEvent('tap-completed', { detail: { score: this.score } }));
 
     if (!this.container) return;

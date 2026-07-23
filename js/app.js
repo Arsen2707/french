@@ -3,6 +3,7 @@ class ArsenApp {
     this.theme = new ThemeManager();
     this.sound = new SoundManager();
     this.toast = new ToastManager();
+    this.auth = new AuthManager(this.toast);
     this.cards = new CardsManager(this.toast, this.sound);
     this.test = new TestManager(this.toast, this.sound);
     this.tapGame = new TapGame(this.toast, this.sound);
@@ -10,17 +11,59 @@ class ArsenApp {
     this.init();
   }
 
-  init() {
+  async init() {
     this.bindNavigation();
     this.bindThemeToggle();
     this.bindHotkeys();
     this.bindDailyTasks();
     this.bindAchievements();
+    await this.auth.checkAuth();
     this.updateProfile();
+    this.updateAuthHint();
     this.hideLoading();
     document.addEventListener('progress-updated', () => this.updateProfile());
     document.addEventListener('test-completed', () => this.updateDailyTask('test', 1));
     document.addEventListener('tap-completed', (e) => this.updateDailyTask('tap', e.detail.score));
+    document.addEventListener('auth-changed', (e) => {
+      const detail = e.detail || {};
+      if (detail.mode === 'server' && detail.profile) {
+        if (detail.profile.lastTest) {
+          this.storageSet('last_test', JSON.stringify(detail.profile.lastTest));
+        }
+        if (detail.profile.bestTapScore != null) {
+          const localBest = parseInt(this.storageGet('tap_best', '0'), 10);
+          this.storageSet(
+            'tap_best',
+            String(Math.max(localBest, detail.profile.bestTapScore || 0))
+          );
+        }
+      }
+      if (detail.mode === 'local' && detail.account) {
+        if (detail.account.lastTest) {
+          this.storageSet('last_test', JSON.stringify(detail.account.lastTest));
+        }
+        if (detail.account.tapBest != null) {
+          const localBest = parseInt(this.storageGet('tap_best', '0'), 10);
+          this.storageSet('tap_best', String(Math.max(localBest, detail.account.tapBest || 0)));
+        }
+      }
+      if (detail.loggedOut) {
+        /* keep guest localStorage as-is */
+      }
+      this.updateProfile();
+      this.updateAuthHint();
+    });
+  }
+
+  updateAuthHint() {
+    const hint = document.getElementById('profile-auth-hint');
+    if (!hint) return;
+    const user = this.auth.getUser();
+    if (!user) {
+      hint.textContent = 'Войди в аккаунт, чтобы прогресс сохранялся';
+    } else {
+      hint.textContent = 'Вы вошли как ' + user.username + ' — прогресс сохраняется';
+    }
   }
 
   bindHotkeys() {
@@ -29,6 +72,7 @@ class ArsenApp {
       const typing = tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable;
 
       if (e.key === 'Escape') {
+        this.auth.hideModals();
         if (this.tapGame.running) this.tapGame.stopGame();
         return;
       }

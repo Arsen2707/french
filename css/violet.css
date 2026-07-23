@@ -276,9 +276,129 @@ body {
   box-shadow: 0 10px 28px var(--primary-glow);
 }
 
-.pc-only-banner {
-  display: none !important;
+.auth-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
 }
+
+.auth-buttons .btn {
+  width: 100%;
+}
+
+.user-menu {
+  display: none;
+  position: relative;
+  width: 100%;
+}
+
+.user-menu.visible {
+  display: block;
+}
+
+.user-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--radius, 12px);
+  color: var(--text);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-bright);
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--gradient);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+#user-name {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.user-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.35rem);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-bright);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: 0.2s ease;
+  z-index: 80;
+  overflow: hidden;
+}
+
+.user-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  color: var(--text);
+  text-align: left;
+}
+
+.user-dropdown-item:hover {
+  background: var(--bg-secondary);
+}
+
+.modal-overlay.open {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+@media (max-width: 900px) {
+  .auth-buttons {
+    flex-direction: row;
+    width: auto;
+    flex: 1;
+  }
+
+  .auth-buttons .btn {
+    width: auto;
+    flex: 1;
+    font-size: 0.75rem;
+    padding: 0.45rem 0.5rem;
+  }
+
+  .user-menu {
+    width: auto;
+    flex: 1;
+  }
+
+  .sidebar-footer {
+    flex-wrap: wrap;
+  }
+}
+
 
 .cards-grid {
   display: grid !important;

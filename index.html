@@ -40,7 +40,24 @@
       </nav>
 
       <div class="sidebar-footer">
-        <div class="header-actions" style="flex-direction:column;align-items:stretch">
+        <div class="auth-buttons" id="auth-buttons">
+          <button class="btn btn-ghost btn-sm" id="btn-login" type="button"><i class="fas fa-sign-in-alt"></i> Вход</button>
+          <button class="btn btn-primary btn-sm" id="btn-register" type="button"><i class="fas fa-user-plus"></i> Регистрация</button>
+        </div>
+
+        <div class="user-menu" id="user-menu">
+          <button class="user-menu-btn" id="user-menu-btn" type="button">
+            <span class="user-avatar" id="user-avatar">A</span>
+            <span id="user-name">User</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="user-dropdown" id="user-dropdown">
+            <button class="user-dropdown-item" type="button" data-section="profile"><i class="fas fa-user"></i> Профиль</button>
+            <button class="user-dropdown-item" type="button" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Выйти</button>
+          </div>
+        </div>
+
+        <div class="header-actions" style="flex-direction:row;align-items:center;gap:0.35rem">
           <button class="btn-icon" id="theme-toggle" aria-label="Переключить тему">
             <span id="theme-icon">🌙</span>
           </button>
@@ -104,7 +121,7 @@
       <section id="section-profile" class="section">
         <div class="section-header">
           <h1>Профиль</h1>
-          <p>Твоя статистика и достижения</p>
+          <p id="profile-auth-hint">Войди в аккаунт, чтобы прогресс сохранялся</p>
         </div>
         <div class="streak-display">
           <span class="streak-fire">🔥</span>
@@ -148,8 +165,58 @@
 
   <div id="toast-container"></div>
 
+  <div class="modal-overlay" id="login-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Вход</h2>
+        <button class="modal-close" data-close-modal aria-label="Закрыть"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" required placeholder="email@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Пароль</label>
+          <input type="password" id="login-password" required placeholder="••••••" autocomplete="current-password">
+        </div>
+        <div class="form-error" id="login-error"></div>
+        <button type="submit" class="btn btn-primary btn-block">Войти</button>
+        <p class="form-switch">Нет аккаунта? <a href="#" data-switch-auth="register">Зарегистрироваться</a></p>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="register-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Регистрация</h2>
+        <button class="modal-close" data-close-modal aria-label="Закрыть"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="register-form">
+        <div class="form-group">
+          <label for="register-username">Имя</label>
+          <input type="text" id="register-username" required placeholder="Arsen" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="register-email">Email</label>
+          <input type="email" id="register-email" required placeholder="email@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="register-password">Пароль</label>
+          <input type="password" id="register-password" required minlength="6" placeholder="мин. 6 символов" autocomplete="new-password">
+        </div>
+        <div class="form-error" id="register-error"></div>
+        <button type="submit" class="btn btn-primary btn-block">Создать аккаунт</button>
+        <p class="form-switch">Уже есть аккаунт? <a href="#" data-switch-auth="login">Войти</a></p>
+      </form>
+    </div>
+  </div>
+
   <script src="js/data.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/theme.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/cards.js"></script>
   <script src="js/test.js"></script>
   <script src="js/tap-game.js"></script>

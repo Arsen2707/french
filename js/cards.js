@@ -21,9 +21,57 @@ class CardsManager {
       this.search = e.target.value.toLowerCase();
       this.render();
     });
+    document.addEventListener('auth-changed', (e) => this.onAuthChanged(e.detail || {}));
   }
 
-  loadProgress() {
+  async onAuthChanged(detail) {
+    if (detail.loggedOut) {
+      this.progress = {};
+      this.saveProgressLocal();
+      this.render();
+      return;
+    }
+    if (!detail.user) return;
+
+    const guest = this.loadGuestProgress();
+    let remote = {};
+
+    if (detail.mode === 'server') {
+      if (detail.profile && detail.profile.progress) {
+        detail.profile.progress.forEach((p) => {
+          remote[p.wordId] = p.status;
+        });
+      }
+      this.progress = this.mergeProgress(guest, remote);
+      this.saveProgressLocal();
+      try {
+        const synced = await API.syncProgress(this.progress);
+        if (synced.progress) this.progress = synced.progress;
+        this.saveProgressLocal();
+      } catch {
+        /* keep local merge */
+      }
+    } else if (detail.mode === 'local' && detail.account) {
+      remote = detail.account.progress || {};
+      this.progress = this.mergeProgress(guest, remote);
+      this.saveProgressLocal();
+      this.persistLocalAccount();
+    }
+
+    this.render();
+    document.dispatchEvent(new CustomEvent('progress-updated'));
+  }
+
+  mergeProgress(a, b) {
+    const merged = { ...(a || {}) };
+    Object.entries(b || {}).forEach(([id, status]) => {
+      if (status === 'learned' || !merged[id]) merged[id] = status;
+      else if (status === 'review' && merged[id] !== 'learned') merged[id] = status;
+    });
+    return merged;
+  }
+
+  loadGuestProgress() {
     try {
       return JSON.parse(
         localStorage.getItem('arsen_progress') ||
@@ -35,10 +83,28 @@ class CardsManager {
     }
   }
 
-  saveProgress() {
+  loadProgress() {
+    return this.loadGuestProgress();
+  }
+
+  saveProgressLocal() {
     localStorage.setItem('arsen_progress', JSON.stringify(this.progress));
     this.updateProgressBar();
     document.dispatchEvent(new CustomEvent('progress-updated'));
+  }
+
+  persistLocalAccount() {
+    const user = window.app?.auth?.getUser();
+    if (!user || window.app?.auth?.getMode() !== 'local') return;
+    LocalAuth.updateAccount(user.email, { progress: this.progress });
+  }
+
+  saveProgress() {
+    this.saveProgressLocal();
+    this.persistLocalAccount();
+    if (API.getToken()) {
+      /* single word updated in setStatus */
+    }
   }
 
   renderChips() {
@@ -209,6 +275,9 @@ class CardsManager {
       status === 'learned' ? 'Слово отмечено как выученное!' : 'Добавлено на повторение',
       'success'
     );
+    if (API.getToken()) {
+      API.updateProgress(wordId, status).catch(() => {});
+    }
   }
 
   getLearnedCount() {

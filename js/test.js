@@ -298,6 +298,17 @@ class TestManager {
       'arsen_last_test',
       JSON.stringify({ score: this.score, total, date: Date.now() })
     );
+    if (window.app?.auth?.getMode() === 'local') {
+      const user = window.app.auth.getUser();
+      if (user) {
+        LocalAuth.updateAccount(user.email, {
+          lastTest: { score: this.score, total, date: Date.now() }
+        });
+      }
+    }
+    if (API.getToken()) {
+      API.saveTestResult(this.score, total).catch(() => {});
+    }
     document.dispatchEvent(
       new CustomEvent('test-completed', { detail: { score: this.score, total } })
     );
